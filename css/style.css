@@ -1,0 +1,303 @@
+/* 基础样式，重置默认边距并居中内容 */
+.timeline-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+    /* 紫色视觉方向 */
+    background-color: #fdfafc; 
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.timeline-header {
+    text-align: center;
+    color: #6a1b9a; /* 深紫色 */
+    margin-bottom: 10px;
+    font-size: 2em;
+}
+
+.timeline-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 1em;
+}
+
+/* 缩略图/全局时间线布局 */
+.timeline-minimap-container {
+    width: 100%;
+    height: 50px;
+    background: #fdfafc;
+    border: 1px solid #e1bee7;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.timeline-zoom-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #6a1b9a;
+}
+
+.timeline-zoom-controls button {
+    background: #f3e5f5;
+    border: 1px solid #ce93d8;
+    border-radius: 4px;
+    padding: 2px 10px;
+    cursor: pointer;
+    color: #6a1b9a;
+    font-weight: bold;
+}
+
+.timeline-zoom-controls button:hover {
+    background: #e1bee7;
+}
+
+.timeline-minimap-track {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.timeline-minimap-viewport {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(142, 36, 170, 0.2);
+    border: 1.5px solid #8e24aa;
+    border-radius: 4px;
+    cursor: grab;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.timeline-minimap-viewport:active {
+    cursor: grabbing;
+}
+
+.timeline-minimap-point {
+    position: absolute;
+    top: 50%;
+    width: 4px;
+    height: 20px;
+    background-color: #8e24aa;
+    transform: translate(-50%, -50%);
+    border-radius: 2px;
+}
+
+.timeline-minimap-duration {
+    position: absolute;
+    top: 50%;
+    height: 12px;
+    background-color: rgba(142, 36, 170, 0.4);
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+/* 水平时间线区域 */
+.timeline-scroll-area {
+    width: 100%;
+    overflow-x: auto; /* 允许横向滚动 */
+    padding: 40px 0;
+    position: relative;
+    background: #f3e5f5; /* 浅紫底色区分区域 */
+    border-radius: 6px;
+    border: 1px solid #e1bee7;
+    scrollbar-width: thin;
+}
+
+/* 自定义滚动条风格 */
+.timeline-scroll-area::-webkit-scrollbar {
+    height: 8px;
+}
+.timeline-scroll-area::-webkit-scrollbar-thumb {
+    background-color: #ce93d8;
+    border-radius: 4px;
+}
+
+.timeline-track-container {
+    height: 400px; /* 增加高度以便容纳更多事件分支和横向展开文本 */
+    position: relative;
+    margin: 0; /* 修改以适应动态宽度和两端填充 */
+}
+
+/* 贯穿始终的水平主轴线 */
+.timeline-axis {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: #ce93d8;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+/* 时间刻度线和标签（月份） */
+.timeline-tick-container {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 12px;
+    border-left: 2px solid rgba(142, 36, 170, 0.4);
+    z-index: 1;
+}
+
+.timeline-tick-container.has-event {
+    border-left: 2px solid #8e24aa; /* 有事件的月份刻度线更深 */
+}
+
+.timeline-tick-label {
+    position: absolute;
+    top: 100%; /* 相对于 tick 底部向下偏移 */
+    margin-top: 4px;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #8e24aa;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+    opacity: 0.6;
+}
+
+.timeline-tick-container.has-event .timeline-tick-label {
+    opacity: 1;
+    font-weight: bold;
+}
+
+/* 连接轴线的垂直引线 */
+.timeline-connector {
+    position: absolute;
+    width: 2px;
+    background-color: rgba(206, 147, 216, 0.7);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+/* 时间点事件的标记 */
+.timeline-event-point {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: #8e24aa;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    box-shadow: 0 0 0 2px #8e24aa;
+    z-index: 10;
+}
+
+/* 持续事件的横条 */
+.timeline-event-duration {
+    position: absolute;
+    height: 20px;
+    background-color: rgba(142, 36, 170, 0.7); /* 半透明紫色 */
+    border: 1px solid #6a1b9a;
+    border-radius: 10px;
+    cursor: pointer;
+    z-index: 10;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow: hidden;
+}
+
+.timeline-event-duration:hover {
+    background-color: rgba(142, 36, 170, 0.9);
+}
+
+.timeline-event-duration-title {
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* 事件信息的卡片 */
+.timeline-card {
+    position: absolute;
+    width: 220px;
+    background: #fff;
+    border: 1px solid #ce93d8;
+    border-radius: 6px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateX(-50%);
+    z-index: 20;
+    transition: all 0.3s ease;
+}
+
+.timeline-card:hover, .timeline-card.hovered {
+    z-index: 30;
+    box-shadow: 0 4px 12px rgba(106, 27, 154, 0.2);
+    border-color: #8e24aa;
+}
+
+.timeline-time {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #8e24aa;
+    margin-bottom: 5px;
+}
+
+.timeline-title {
+    font-size: 1em;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.timeline-desc-container {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+}
+
+/* 悬浮到卡片或持续时间条上时展开详情 */
+.timeline-card:hover .timeline-desc-container,
+.timeline-card.hovered .timeline-desc-container,
+.timeline-event-duration:hover + .timeline-card .timeline-desc-container,
+.timeline-event-point:hover + .timeline-card .timeline-desc-container {
+    max-height: 300px;
+    opacity: 1;
+    margin-top: 8px;
+}
+
+.timeline-desc {
+    font-size: 0.85em;
+    color: #555;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.timeline-source a {
+    font-size: 0.8em;
+    color: #1976d2;
+    text-decoration: none;
+    display: inline-block;
+}
+.timeline-source a:hover {
+    text-decoration: underline;
+}
+
+.timeline-error {
+    text-align: center;
+    color: #d32f2f;
+    padding: 20px;
+}

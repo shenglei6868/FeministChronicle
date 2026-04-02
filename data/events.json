@@ -1,0 +1,39 @@
+[
+    {
+        "type": "point",
+        "startDate": "2012-02-19",
+        "title": "“占领男厕所”行为艺术",
+        "description": "女大学生在多地公厕前发起“占领男厕所”活动，呼吁社会重视女性厕位严重不足的问题。",
+        "source": "https://zh.wikipedia.org/zh-cn/%E5%8D%A0%E9%A2%86%E7%94%B7%E5%8E%95%E6%89%80"
+    },
+    {
+        "type": "duration",
+        "startDate": "2015-03-06",
+        "endDate": "2015-04-13",
+        "title": "“女权五姐妹”拘留事件",
+        "description": "五名青年女权活动家计划开展反性骚扰倡导被刑事拘留，持续三十余天后获释释。",
+        "source": "https://zh.wikipedia.org/zh-cn/%E4%B8%AD%E5%9B%BD%E5%A5%B3%E6%9D%83%E4%BA%94%E5%A7%90%E5%A6%B9"
+    },
+    {
+        "type": "point",
+        "startDate": "2018-01-01",
+        "title": "中国 #MeToo 运动起步",
+        "description": "罗茜茜实名举报副教授陈小武性骚扰，掀起中国互联网的 #MeToo 浪潮。",
+        "source": "https://zh.wikipedia.org/wiki/MeToo_(%E4%B8%AD%E5%9C%8B%E5%A4%A7%E9%99%B8)"
+    },
+    {
+        "type": "duration",
+        "startDate": "2018-07-23",
+        "endDate": "2018-08-30",
+        "title": "公益圈与媒体圈反性骚扰风暴",
+        "description": "雷闯、章文等多名知名人士被指控性侵害与性骚扰，各行业内部发起反思与抗争。",
+        "source": ""
+    },
+    {
+        "type": "point",
+        "startDate": "2026-01-09",
+        "title": "小红书开年”入赘“神帖",
+        "description": "小红书用户“云吃吃”发布的一则“想让男友“入赘”需要多少彩礼”的帖子，由于评论区对“入赘”的高额开价，在事件反转后引发广泛关注和对传统婚恋价值的讨论。",
+        "source": ""
+    }
+]
