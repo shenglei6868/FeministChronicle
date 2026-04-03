@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const timelineContainer = document.getElementById('timeline');
-    const dataUrl = 'data/events.json';
+    const dataUrl = 'data/events.json?t=' + new Date().getTime(); // 加时间戳防止浏览器缓存不更新
 
     fetch(dataUrl)
         .then(response => {
@@ -203,9 +203,28 @@ function renderHorizontalTimeline(events, container) {
             updateTickLabels(node);
         });
 
+    // 绘制全局小地图 (Minimap) 年份刻度
+    const minYear = minD.getFullYear();
+    const maxYear = maxD.getFullYear();
+    const tempLayoutWidth = updateLayout(1.0); // 使用基准比例计算小地图年份比例
+    for (let y = minYear; y <= maxYear; y++) {
+        const yearStart = new Date(y, 0, 1).getTime();
+        // 只有当该年份刚好在我们的调整后时间范围内才显示
+        if (yearStart >= adjustedMin && yearStart <= adjustedMax) {
+            const yearX = timeToX(yearStart);
+            const percent = (yearX / tempLayoutWidth) * 100;
+            const yearEl = document.createElement('div');
+            yearEl.className = 'timeline-minimap-year';
+            yearEl.style.left = percent + '%';
+            yearEl.innerText = y;
+            document.getElementById('minimap-container').appendChild(yearEl);
+        }
+    }
+    updateLayout(); // 恢复当前默认放大比例
+
     // 4. 排序并规划事件空间，绘制事件
-    const tracksTop = [20, 80, 140, 200, 260]; 
-    const tracksBottom = [20, 80, 140, 200, 260]; 
+    const tracksTop = [40, 100, 160, 220, 280]; 
+    const tracksBottom = [40, 100, 160, 220, 280]; 
     events.sort((a,b) => parseDateStr(a.startDate) - parseDateStr(b.startDate));
 
     let placedTop = [];
@@ -271,17 +290,15 @@ function renderHorizontalTimeline(events, container) {
         const cardRight = midX + cardWidth / 2;
 
         let chosenTrackIndex = 0;
-        for (let i = 0; i < targetTracks.length; i++) {
+        while (true) {
             // 检查当前轨道是否有重叠
             const hasCollision = placedEvents.some(p => {
-                return p.trackIndex === i && !(cardRight < p.left || cardLeft > p.right);
+                return p.trackIndex === chosenTrackIndex && !(cardRight < p.left || cardLeft > p.right);
             });
             if (!hasCollision) {
-                chosenTrackIndex = i;
                 break;
             }
-            // 如果所有的候选轨道都被占用了，默认放在最远的轨道上
-            chosenTrackIndex = i;
+            chosenTrackIndex++;
         }
 
         placedEvents.push({
@@ -290,7 +307,7 @@ function renderHorizontalTimeline(events, container) {
             right: cardRight
         });
 
-        const marginOffset = targetTracks[chosenTrackIndex];
+        const marginOffset = 40 + chosenTrackIndex * 60;
 
         const card = document.createElement('div');
         card.className = `timeline-card ${isTop ? 'card-top' : 'card-bottom'}`;
@@ -309,7 +326,8 @@ function renderHorizontalTimeline(events, container) {
             bar.className = 'timeline-event-duration';
             bar.style.left = startX + 'px';
             bar.style.width = width + 'px';
-            bar.style.top = isTop ? 'calc(50% - 25px)' : 'calc(50% + 5px)';
+            // duration 事件的彩条也根据分配的轨道拉开足够的上下距离，避免同时发生时条有任何重叠
+            bar.style.top = isTop ? `calc(50% - ${25 + chosenTrackIndex * 28}px)` : `calc(50% + ${5 + chosenTrackIndex * 28}px)`;
             bar.innerHTML = `<span class="timeline-event-duration-title">${event.title}</span>`;
             trackContainer.appendChild(bar);
 
@@ -317,30 +335,44 @@ function renderHorizontalTimeline(events, container) {
             connector.style.left = midX + 'px';
 
             if (isTop) {
-                // 上方的事件：计算并固定其 top 边距，让卡片向下（向时间线方向）展开
-                // 估算未展开卡片高度约为了60px
-                card.style.top = `calc(50% - ${marginOffset + 30 + 60}px)`;
-                connector.style.bottom = '50%';
-                connector.style.height = `${marginOffset + 30}px`;
+                const barTopDist = 25 + chosenTrackIndex * 28;
+                // 上方的事件：计算并固定其 bottom 边距，让卡片默认自然向上生长（滑动）
+                card.style.bottom = `calc(50% + ${marginOffset + 30}px)`;
+                // 连接线不再连接到时间轴 50%，而是连接到事件本身所在的彩色线条上
+                connector.style.bottom = `calc(50% + ${barTopDist}px)`;
+                connector.style.height = `${marginOffset + 30 - barTopDist}px`;
             } else {
-                // 下方的事件：计算并固定其 bottom 边距，让卡片向上（向时间线方向）展开
-                card.style.bottom = `calc(50% - ${marginOffset + 30 + 60}px)`;
-                connector.style.top = '50%';
-                connector.style.height = `${marginOffset + 30}px`;
+                const barBottomDist = 25 + chosenTrackIndex * 28;
+                // 下方的事件：计算并固定其 top 边距，让卡片默认自然向下生长（滑动）
+                card.style.top = `calc(50% + ${marginOffset + 30}px)`;
+                // 连接线不再连接到时间轴 50%，而是连接到事件本身所在的彩色线条上
+                connector.style.top = `calc(50% + ${barBottomDist}px)`;
+                connector.style.height = `${marginOffset + 30 - barBottomDist}px`;
             }
             
             trackContainer.appendChild(connector);
             trackContainer.appendChild(card);
+
+            card.addEventListener('mouseenter', () => checkDescOverflow(card));
+            card.addEventListener('mouseleave', () => card.style.transform = '');
+
             eventNodes.push({
                 isDuration,
                 start,
                 end,
                 bar, card, connector, minimapDuration,
-                isTop, marginOffset
+                isTop, marginOffset,
+                chosenTrackIndex
             });
             
-            bar.addEventListener('mouseenter', () => card.classList.add('hovered'));
-            bar.addEventListener('mouseleave', () => card.classList.remove('hovered'));
+            bar.addEventListener('mouseenter', () => {
+                card.classList.add('hovered');
+                checkDescOverflow(card);
+            });
+            bar.addEventListener('mouseleave', () => {
+                card.classList.remove('hovered');
+                card.style.transform = '';
+            });
             
         } else {
             const point = document.createElement('div');
@@ -352,13 +384,11 @@ function renderHorizontalTimeline(events, container) {
             connector.style.left = startX + 'px';
 
             if (isTop) {
-                // 上方的事件：计算并固定其 top 边距，让卡片向下（向时间线方向）展开
-                card.style.top = `calc(50% - ${marginOffset + 60}px)`;
+                card.style.bottom = `calc(50% + ${marginOffset}px)`;
                 connector.style.bottom = '50%';
                 connector.style.height = `${marginOffset}px`;
             } else {
-                // 下方的事件：计算并固定其 bottom 边距，让卡片向上（向时间线方向）展开
-                card.style.bottom = `calc(50% - ${marginOffset + 60}px)`;
+                card.style.top = `calc(50% + ${marginOffset}px)`;
                 connector.style.top = '50%';
                 connector.style.height = `${marginOffset}px`;
             }
@@ -366,14 +396,122 @@ function renderHorizontalTimeline(events, container) {
             trackContainer.appendChild(connector);
             trackContainer.appendChild(card);
 
+            card.addEventListener('mouseenter', () => checkDescOverflow(card));
+            card.addEventListener('mouseleave', () => card.style.transform = '');
+
             eventNodes.push({
                 isDuration,
                 start,
                 point, card, connector, minimapPoint,
-                isTop, marginOffset
+                isTop, marginOffset,
+                chosenTrackIndex
             });
         }
     });
+
+    // 5. 根据事件的时间重叠情况，独立计算 Minimap 上 Point（单点圆圈）的防重叠并动态分配高度
+    const minimapPlacedPoints = [];
+    const POINT_TIME_THRESHOLD = 30 * 24 * 60 * 60 * 1000; // 如果单点事件相差在30天以内，在小地图上就会分轨
+
+    eventNodes.forEach(en => {
+        if (!en.isDuration) {
+            let trackIndex = 0;
+            while(true) {
+                const collision = minimapPlacedPoints.some(p => {
+                    return p.trackIndex === trackIndex && Math.abs(p.start - en.start) < POINT_TIME_THRESHOLD;
+                });
+                if (!collision) break;
+                trackIndex++;
+            }
+            en.minimapPointTrackIndex = trackIndex;
+            minimapPlacedPoints.push({ trackIndex, start: en.start });
+        }
+    });
+
+    const maxPointTrack = minimapPlacedPoints.length > 0 ? Math.max(...minimapPlacedPoints.map(p => p.trackIndex)) : 0;
+    const pointLayerCount = minimapPlacedPoints.length > 0 ? maxPointTrack + 1 : 0;
+    
+    // 获取 Duration 的层级情况
+    const maxBottomTrack = Math.max(0, ...placedBottom.map(p => p.trackIndex));
+    const durationLayerCount = maxBottomTrack + 1;
+
+    // Minimap 总高度为50px，我们留下大概44px的安全绘图区域 (上下各留出3px的padding)
+    const availableHeight = 44; 
+    // 单个 Point 圆圈默认需要的高度（6px直径 + 2px间距 = 8px）
+    let pointVerticalSpace = 8; 
+    let actualPointsHeight = pointLayerCount * pointVerticalSpace;
+    
+    // 自动压缩：如果单个时间由于重叠排不开，最多只占据上方约60%空间 (比如上限26px)
+    if (actualPointsHeight > 26) {
+        actualPointsHeight = 26;
+        pointVerticalSpace = actualPointsHeight / pointLayerCount;
+    }
+    
+    // 自动扩容：剩下的大量高度全部自动释放给 Duration 事件
+    const remainingForDuration = availableHeight - actualPointsHeight;
+    const durationSpacing = durationLayerCount > 0 ? remainingForDuration / durationLayerCount : 0;
+
+    eventNodes.forEach(en => {
+        if (en.minimapDuration) {
+            // 设定宽容的高度
+            en.minimapDuration.style.height = `${Math.max(2, durationSpacing - 1)}px`; 
+            // 从下方空白处往下排
+            const durationStartTop = 3 + actualPointsHeight;
+            en.minimapDuration.style.top = `${durationStartTop + en.chosenTrackIndex * durationSpacing}px`;
+        }
+        if (en.minimapPoint) {
+            // 根据给到的纵向空间自适应圆圈大小（最高能大到6px，最低小到3px）
+            const ptDiameter = Math.max(3, Math.min(6, pointVerticalSpace * 0.8));
+            en.minimapPoint.style.width = `${ptDiameter}px`;
+            en.minimapPoint.style.height = `${ptDiameter}px`;
+            // 圆点从最顶端空白处往下排
+            const ptTop = 3 + en.minimapPointTrackIndex * pointVerticalSpace;
+            en.minimapPoint.style.top = `${ptTop}px`;
+        }
+    });
+
+    // 动态检查溢出：超出容器上下边界时进行滑动调整
+    function checkDescOverflow(cardEl) {
+        const descContainer = cardEl.querySelector('.timeline-desc-container');
+        if (!descContainer) return;
+        
+        // 测量要展开内容的实际高度
+        const scrollHeight = descContainer.scrollHeight;
+        const cardRect = cardEl.getBoundingClientRect();
+        const scrollAreaRect = scrollArea.getBoundingClientRect();
+
+        const isTopCard = cardEl.classList.contains('card-top');
+        
+        if (isTopCard) {
+            // 向上生长，检查是否超出了顶部
+            const expectedTop = cardRect.top - scrollHeight;
+            if (expectedTop < scrollAreaRect.top) {
+                // 超出顶部了，向下滑动（translateY 为正）补回来
+                let overflowOffset = scrollAreaRect.top - expectedTop + 15;
+                // 做个保护限制（不能滑得太下方越过容器 bottom）
+                if (cardRect.bottom + overflowOffset > scrollAreaRect.bottom) {
+                    overflowOffset = scrollAreaRect.bottom - cardRect.bottom - 15;
+                }
+                if (overflowOffset > 0) {
+                    cardEl.style.transform = `translate(-50%, ${overflowOffset}px)`;
+                }
+            }
+        } else {
+            // 向下生长，检查是否超出了底部
+            const expectedBottom = cardRect.bottom + scrollHeight;
+            if (expectedBottom > scrollAreaRect.bottom) {
+                // 超出底部了，向上滑动（translateY 为负）补回来
+                let overflowOffset = expectedBottom - scrollAreaRect.bottom + 15; 
+                // 做个保护限制（不能滑得太上方越过容器 top）
+                if (cardRect.top - overflowOffset < scrollAreaRect.top) {
+                    overflowOffset = cardRect.top - scrollAreaRect.top - 15;
+                }
+                if (overflowOffset > 0) {
+                    cardEl.style.transform = `translate(-50%, -${overflowOffset}px)`;
+                }
+            }
+        }
+    }
 
     // ============================================
     // 动态布局缩放核心功能
