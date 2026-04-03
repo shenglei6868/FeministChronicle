@@ -15,11 +15,26 @@
         "source": "https://zh.wikipedia.org/zh-cn/%E4%B8%AD%E5%9B%BD%E5%A5%B3%E6%9D%83%E4%BA%94%E5%A7%90%E5%A6%B9"
     },
     {
+        "type": "duration",
+        "startDate": "2015-03-25",
+        "endDate": "2015-04-25",
+        "title": "测试持续事件1",
+        "description": "这是一个用来测试时间线显示的事件，持续时间为一个月。",
+        "source": ""
+    },
+    {
         "type": "point",
         "startDate": "2018-01-01",
         "title": "中国 #MeToo 运动起步",
         "description": "罗茜茜实名举报副教授陈小武性骚扰，掀起中国互联网的 #MeToo 浪潮。",
         "source": "https://zh.wikipedia.org/wiki/MeToo_(%E4%B8%AD%E5%9C%8B%E5%A4%A7%E9%99%B8)"
+    },
+    {
+        "type": "point",
+        "startDate": "2018-01-18",
+        "title": "测试单个事件1",
+        "description": "这是一个用来测试时间线显示的事件。",
+        "source": ""
     },
     {
         "type": "duration",
@@ -34,6 +49,21 @@
         "startDate": "2026-01-09",
         "title": "小红书开年”入赘“神帖",
         "description": "小红书用户“云吃吃”发布的一则“想让男友“入赘”需要多少彩礼”的帖子，由于评论区对“入赘”的高额开价，在事件反转后引发广泛关注和对传统婚恋价值的讨论。",
+        "source": ""
+    },
+    {
+        "type": "point",
+        "startDate": "2026-01-30",
+        "title": "测试单个事件2",
+        "description": "这是一个用来测试时间线显示的事件。",
+        "source": ""
+    },
+    {
+        "type": "duration",
+        "startDate": "2026-02-02",
+        "endDate": "2026-02-25",
+        "title": "测试持续事件2",
+        "description": "这是一个用来测试时间线显示的事件，持续时间为一个月。",
         "source": ""
     }
 ]
